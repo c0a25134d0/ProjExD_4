@@ -263,7 +263,7 @@ class Life:
 
     def update(self, screen):
         for i in range(self.num):
-            screen.blit(self.image, (WIDTH-120+i*40, HEIGHT-50))
+            screen.blit(self.image, (WIDTH-50-i*50, HEIGHT-50))
 
 
 def main():
