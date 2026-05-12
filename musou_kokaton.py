@@ -250,6 +250,31 @@ class Score:
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
 
+class Gravity(pg.sprite.Sprite):
+    """
+    画面全体を覆う重力場を発生させる
+    """
+
+    def __init__(self, life):
+        super().__init__()
+        """
+        重力場を発生させる
+        引数1:重力場の発動時間
+        """
+        self.life = life
+        self.image = pg.Surface((WIDTH, HEIGHT))
+        self.rect = self.image.get_rect()
+
+        self.image = pg.Surface((WIDTH, HEIGHT))  # 半透明な矩形
+        pg.draw.rect(self.image, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
+        self.image.set_alpha(128)
+    
+    def update(self, screen: pg.Surface):
+        screen.blit(self.image, self.rect)
+        if self.life > 0:
+            self.life = self.life - 1   
+        else:
+            self.kill()
 
 class Life:
     """
@@ -287,6 +312,7 @@ def main():
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
     life = Life(3)
+    gravity = pg.sprite.Group()
 
     tmr = 0
     clock = pg.time.Clock()
@@ -301,6 +327,11 @@ def main():
                 score.value -= 100 #スコアを100消費する
                 bird.state = "hyper" #状態をhyperにする
                 bird.hyper_life = 500 #発動時間500を設定する
+            if event.type == pg.KEYDOWN and event.key == pg.K_RETURN :
+                if score.value >= 200:
+                    score.value = score.value - 200  # スコアを消費する
+                    gravity.add(Gravity(400))  # 発動時間
+            
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -326,13 +357,18 @@ def main():
             if bird.state == "hyper":#こうかとん無敵状態
                 exps.add(Explosion(bomb, 50))
                 score.value += 1
-            elif life.num <= 0:
+            elif life.num >= 1:
+                    life.num -= 1
+            
+            if life.num <= 0:
                 score.update(screen)
                 pg.display.update()
                 time.sleep(2)
                 return
-            else:
-                life.num -= 1
+                
+        for bomb in pg.sprite.groupcollide(bombs, gravity, True, False).keys():  # 重力場と衝突した爆弾リスト
+            exps.add(Explosion(bomb, 50))  # 爆発エフェクト
+            score.value += 1  # 1点アップ
 
         bird.update(key_lst, screen)
         beams.update()
@@ -345,6 +381,7 @@ def main():
         exps.draw(screen)
         score.update(screen)
         life.update(screen)
+        gravity.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
