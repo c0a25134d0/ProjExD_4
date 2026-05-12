@@ -101,7 +101,7 @@ class Bird(pg.sprite.Sprite):
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.dire = tuple(sum_mv)
             self.image = self.imgs[self.dire]
-        if self.state == "hyper":
+        if self.state == "hyper": #状態がhyperになった際の秒数カウント処理
             self.image = pg.transform.laplacian(self.image)
             self.hyper_life -= 1
             if self.hyper_life == 0:
@@ -296,7 +296,7 @@ def main():
             score.value += 1  # 1点アップ
 
         for bomb in pg.sprite.spritecollide(bird, bombs, True):  # こうかとんと衝突した爆弾リスト
-            if bird.state == "hyper":
+            if bird.state == "hyper":#こうかとん無敵状態
                 exps.add(Explosion(bomb, 50))
                 score.value += 1
             else:
